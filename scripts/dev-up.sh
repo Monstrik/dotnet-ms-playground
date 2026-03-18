@@ -29,12 +29,14 @@ wait_for_url() {
 }
 
 wait_for_url "monitor" "http://localhost:8080/health"
+wait_for_url "plain-js-client" "http://localhost:8086/health"
 wait_for_url "echo-service" "http://localhost:8082/health"
 wait_for_url "weather-service" "http://localhost:8084/health"
 
 echo
 echo "Stack is ready:"
 echo "  Monitor:         http://localhost:8080"
+echo "  Plain JS Client: http://localhost:8086"
 echo "  Echo API:        http://localhost:8082"
 echo "  Weather API:     http://localhost:8084"
 echo

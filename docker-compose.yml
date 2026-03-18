@@ -44,3 +44,18 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
+  plain-js-client:
+    container_name: plain-js-client
+    build:
+      context: .
+      dockerfile: src/PlainJsClient/Dockerfile
+    image: plain-js-client:local
+    depends_on:
+      - echo-service
+      - weather-service
+    ports:
+      - "8086:80"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+

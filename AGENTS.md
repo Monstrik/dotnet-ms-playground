@@ -14,7 +14,7 @@
 - `src/EchoService/Program.cs` is a minimal API (top-level statements) with all HTTP routes defined inline.
 - `src/WeatherService/Program.cs` is another minimal API that returns deterministic sample weather data.
 - `src/Monitor/Program.cs` is a minimal static-file host serving the plain JavaScript monitor UI from `wwwroot`.
-- Docker Compose runs three containers; browser traffic hits `monitor`, which calls `echo-service` on host port `8082` and `weather-service` on host port `8084`.
+- Docker Compose runs four containers; browser traffic can hit `monitor` (port `8080`) or `plain-js-client` (port `8086`), and both call `echo-service` on host port `8082` and `weather-service` on host port `8084`.
 - Request flow remains direct: route -> minimal handler -> JSON response; no mediator/service layers yet.
 - API contract examples:
   - `GET /health` returns `{ "status": "healthy" }`
@@ -41,6 +41,7 @@
 - Favor minimal API style for small endpoints unless complexity justifies extracting layers.
 - Keep root lean; place runtime code under `src/` and tests under `tests/`.
 - Keep browser UI logic in `src/Monitor/wwwroot` as plain JS; avoid adding frontend build tools unless needed.
+- `src/PlainJsClient` contains container-only static host files that serve the same monitor assets for a non-.NET plain JS host option.
 - Integration tests use `WebApplicationFactory<Program>`; keep each service `Program` test-visible via `public partial class Program;`.
 
 ## Integration & Dependency Notes

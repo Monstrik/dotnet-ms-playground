@@ -7,6 +7,7 @@ Minimal ASP.NET Core microservices demo with an echo API, a weather API, and a p
 - `src/EchoService` - Web API service
 - `src/WeatherService` - Web API service for sample weather data
 - `src/Monitor` - static plain JavaScript monitor host
+- `src/PlainJsClient` - container-only static host files for a non-.NET plain JS client option
 - `tests/EchoService.Tests` - integration tests for echo API endpoints
 - `tests/WeatherService.Tests` - integration tests for weather API endpoints
 - `Solution2.sln` - solution entry point
@@ -99,11 +100,12 @@ curl http://localhost:8084/weather/Tokyo
 
 ## Docker Compose (graceful start/stop)
 
-Compose runs **three containers**:
+Compose runs **four containers**:
 
 - `echo-service` (ASP.NET API, host `8082` -> container `8080`)
 - `weather-service` (ASP.NET API, host `8084` -> container `8080`)
 - `monitor` (ASP.NET static host, host `8080` -> container `8080`)
+- `plain-js-client` (Node static host, host `8086` -> container `80`)
 
 Use compose to build and start in detached mode:
 
@@ -123,19 +125,21 @@ Check logs and verify API and UI:
 docker compose logs -f echo-service
 docker compose logs -f weather-service
 docker compose logs -f monitor
+docker compose logs -f plain-js-client
 curl http://localhost:8082/health
 curl http://localhost:8082/echo/hello
 curl http://localhost:8084/health
 curl http://localhost:8084/weather/London
 open http://localhost:8080
+open http://localhost:8086
 ```
 
-In this setup, the monitor calls `http://localhost:8082` and `http://localhost:8084` directly from `http://localhost:8080`.
+In this setup, both browser UIs call `http://localhost:8082` and `http://localhost:8084` directly.
 
 Stop gracefully (30s grace period from `docker-compose.yml`):
 
 ```bash
-docker compose stop -t 30 monitor echo-service weather-service
+docker compose stop -t 30 monitor plain-js-client echo-service weather-service
 docker compose down
 ```
 
