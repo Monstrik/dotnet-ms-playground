@@ -1,4 +1,42 @@
 services:
+  postgres:
+    container_name: postgres
+    image: quay.io/sclorg/postgresql-16-c9s:latest
+    environment:
+      POSTGRESQL_USER: todo
+      POSTGRESQL_PASSWORD: todo
+      POSTGRESQL_DATABASE: todos
+    volumes:
+      - pg-data:/var/lib/pgsql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432", "-U", "todo", "-d", "todos"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  todo-service:
+    container_name: todo-service
+    build:
+      context: .
+      dockerfile: src/TodoService/Dockerfile
+    image: todo-service:local
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      TODO_DB_CONNECTION: Host=postgres;Port=5432;Database=todos;Username=todo;Password=todo
+    ports:
+      - "8088:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
   echo-service:
     container_name: echo-service
     build:
@@ -36,6 +74,7 @@ services:
     depends_on:
       - echo-service
       - weather-service
+      - todo-service
     ports:
       - "8080:8080"
     environment:
@@ -53,9 +92,13 @@ services:
     depends_on:
       - echo-service
       - weather-service
+      - todo-service
     ports:
       - "8086:80"
     init: true
     stop_signal: SIGTERM
     stop_grace_period: 30s
+
+volumes:
+  pg-data:
 

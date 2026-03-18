@@ -32,6 +32,7 @@ wait_for_url "monitor" "http://localhost:8080/health"
 wait_for_url "plain-js-client" "http://localhost:8086/health"
 wait_for_url "echo-service" "http://localhost:8082/health"
 wait_for_url "weather-service" "http://localhost:8084/health"
+wait_for_url "todo-service" "http://localhost:8088/health"
 
 echo
 echo "Stack is ready:"
@@ -39,10 +40,13 @@ echo "  Monitor:         http://localhost:8080"
 echo "  Plain JS Client: http://localhost:8086"
 echo "  Echo API:        http://localhost:8082"
 echo "  Weather API:     http://localhost:8084"
+echo "  Todo API:        http://localhost:8088"
+echo "  Postgres:        localhost:5433"
 echo
 echo "Useful checks:"
 echo "  http://localhost:8080"
 echo "  http://localhost:8086"
 echo "  curl http://localhost:8082/echo/hello"
 echo "  curl http://localhost:8084/weather/London"
+echo "  curl http://localhost:8088/todos"
 

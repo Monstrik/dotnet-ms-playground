@@ -2,15 +2,19 @@ const queryParameters = new URLSearchParams(window.location.search);
 const isLocalDevMonitor = window.location.port === "5050" || window.location.port === "5158";
 const defaultEchoPort = isLocalDevMonitor ? "5037" : "8082";
 const defaultWeatherPort = isLocalDevMonitor ? "5047" : "8084";
+const defaultTodoPort = isLocalDevMonitor ? "5067" : "8088";
 const monitorBase = window.location.origin;
 const apiBase = queryParameters.get("api") || `${window.location.protocol}//${window.location.hostname}:${defaultEchoPort}`;
 const weatherApiBase = queryParameters.get("weatherApi") || `${window.location.protocol}//${window.location.hostname}:${defaultWeatherPort}`;
+const todoApiBase = queryParameters.get("todoApi") || `${window.location.protocol}//${window.location.hostname}:${defaultTodoPort}`;
 
 document.getElementById("monitorBase").textContent = monitorBase;
 document.getElementById("apiBase").textContent = apiBase;
 document.getElementById("weatherApiBase").textContent = weatherApiBase;
+document.getElementById("todoApiBase").textContent = todoApiBase;
 document.getElementById("echoHealthUrl").textContent = `${apiBase}/health`;
 document.getElementById("weatherHealthUrl").textContent = `${weatherApiBase}/health`;
+document.getElementById("todoHealthUrl").textContent = `${todoApiBase}/health`;
 
 async function callApi(baseUrl, path, options) {
   const response = await fetch(`${baseUrl}${path}`, options);
@@ -75,11 +79,13 @@ async function refreshHealthDashboard() {
   setHealthCard("monitor", { label: "Checking…", className: "status-loading" }, "Waiting for response…");
   setHealthCard("echo", { label: "Checking…", className: "status-loading" }, "Waiting for response…");
   setHealthCard("weather", { label: "Checking…", className: "status-loading" }, "Waiting for response…");
+  setHealthCard("todo", { label: "Checking…", className: "status-loading" }, "Waiting for response…");
 
   const results = await Promise.all([
     probeHealth("monitor", monitorBase),
     probeHealth("echo", apiBase),
-    probeHealth("weather", weatherApiBase)
+    probeHealth("weather", weatherApiBase),
+    probeHealth("todo", todoApiBase)
   ]);
 
   show("healthOutput", {
@@ -125,6 +131,35 @@ document.getElementById("weatherBtn").addEventListener("click", async () => {
     show("weatherOutput", { error: String(error) });
   }
 });
+
+async function refreshTodos() {
+  try {
+    const todos = await callApi(todoApiBase, "/todos");
+    show("todoOutput", todos);
+  } catch (error) {
+    show("todoOutput", { error: String(error) });
+  }
+}
+
+document.getElementById("todoCreateBtn").addEventListener("click", async () => {
+  try {
+    const title = document.getElementById("todoTitle").value;
+    const created = await callApi(todoApiBase, "/todos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ title })
+    });
+
+    const todos = await callApi(todoApiBase, "/todos");
+    show("todoOutput", { created, todos });
+  } catch (error) {
+    show("todoOutput", { error: String(error) });
+  }
+});
+
+document.getElementById("todoRefreshBtn").addEventListener("click", refreshTodos);
 
 refreshHealthDashboard();
 

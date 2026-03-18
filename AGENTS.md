@@ -1,34 +1,39 @@
 # AGENTS Guide for `Solution2`
 
 ## Repository Reality Check
-- This repo now contains runnable .NET 8 APIs, a browser monitor host, and tests.
-- The solution entry point is `Solution2.sln` with five projects:
+- This repo now contains runnable .NET 8 APIs, browser monitor hosts, and tests.
+- The solution entry point is `Solution2.sln` with seven projects:
   - `src/EchoService/EchoService.csproj`
   - `src/WeatherService/WeatherService.csproj`
+  - `src/TodoService/TodoService.csproj`
   - `src/Monitor/Monitor.csproj`
   - `tests/EchoService.Tests/EchoService.Tests.csproj`
   - `tests/WeatherService.Tests/WeatherService.Tests.csproj`
+  - `tests/TodoService.Tests/TodoService.Tests.csproj`
 - `.idea/.idea.Solution2/.idea/*` remains IDE metadata only.
 
 ## Big-Picture Architecture
 - `src/EchoService/Program.cs` is a minimal API (top-level statements) with all HTTP routes defined inline.
 - `src/WeatherService/Program.cs` is another minimal API that returns deterministic sample weather data.
+- `src/TodoService/Program.cs` is a minimal API that provides todo CRUD and uses Postgres when `TODO_DB_CONNECTION` is configured.
 - `src/Monitor/Program.cs` is a minimal static-file host serving the plain JavaScript monitor UI from `wwwroot`.
-- Docker Compose runs four containers; browser traffic can hit `monitor` (port `8080`) or `plain-js-client` (port `8086`), and both call `echo-service` on host port `8082` and `weather-service` on host port `8084`.
+- Docker Compose runs six containers; browser traffic can hit `monitor` (port `8080`) or `plain-js-client` (port `8086`), and both call `echo-service` (`8082`), `weather-service` (`8084`), and `todo-service` (`8088`).
 - Request flow remains direct: route -> minimal handler -> JSON response; no mediator/service layers yet.
 - API contract examples:
   - `GET /health` returns `{ "status": "healthy" }`
   - `GET /echo/{message}` returns `{ "message": "..." }`
   - `GET /weather/{city}` returns a JSON forecast for the requested city.
+  - `POST /todos` with `{ "title": "..." }` returns a created todo item.
 
 ## Developer Workflows
 - Restore/build/test from repo root:
   - `dotnet restore`
   - `dotnet build`
   - `dotnet test`
-- Run locally (three terminals):
+- Run locally (four terminals):
   - `dotnet run --project src/EchoService/EchoService.csproj --urls http://localhost:5037`
   - `dotnet run --project src/WeatherService/WeatherService.csproj --urls http://localhost:5047`
+  - `dotnet run --project src/TodoService/TodoService.csproj --urls http://localhost:5067`
   - `dotnet run --project src/Monitor/Monitor.csproj --urls http://localhost:5050`
 - Docker workflow (from repo root):
   - `docker compose up -d --build`
@@ -45,13 +50,15 @@
 - Integration tests use `WebApplicationFactory<Program>`; keep each service `Program` test-visible via `public partial class Program;`.
 
 ## Integration & Dependency Notes
-- Runtime dependencies are framework-only (`Microsoft.NET.Sdk.Web` in `src/EchoService/EchoService.csproj`, `src/WeatherService/WeatherService.csproj`, and `src/Monitor/Monitor.csproj`).
-- Test-only dependencies live in `tests/EchoService.Tests/EchoService.Tests.csproj` and `tests/WeatherService.Tests/WeatherService.Tests.csproj` (xUnit + ASP.NET Core test host).
+- Runtime dependencies are framework-only for hosts plus `Npgsql` in `src/TodoService/TodoService.csproj`.
+- Test-only dependencies live in `tests/EchoService.Tests/EchoService.Tests.csproj`, `tests/WeatherService.Tests/WeatherService.Tests.csproj`, and `tests/TodoService.Tests/TodoService.Tests.csproj` (xUnit + ASP.NET Core test host).
 - Browser-to-service communication uses CORS, so keep allowed origins aligned with documented local and Compose ports.
+- Compose includes `postgres`; `todo-service` uses `TODO_DB_CONNECTION` to connect internally.
 - No CI/CD config, container orchestration manifests, or external package pinning files are present yet.
 
 ## Guidance for Future Agent Changes
 - If adding business logic, move non-trivial behavior from inline handlers to dedicated classes under `src/EchoService` or `src/WeatherService`.
+- If adding business logic, move non-trivial behavior from inline handlers to dedicated classes under `src/EchoService`, `src/WeatherService`, or `src/TodoService`.
 - If adding integrations (DB, broker, external APIs), document setup and local-dev expectations in `README.md` and this file.
 - Keep examples and commands evidence-based and validated against current repository files.
 

@@ -27,6 +27,7 @@
   <p>Shared health dashboard and API explorer for the running services.</p>
   <p>Echo API: <code id="apiBase"></code></p>
   <p>Weather API: <code id="weatherApiBase"></code></p>
+  <p>Todo API: <code id="todoApiBase"></code></p>
 
   <div class="card">
     <h2>Shared Health Dashboard</h2>
@@ -49,6 +50,12 @@
         <div id="weatherStatus" class="status-badge status-loading">Checking…</div>
         <div class="meta">URL: <code id="weatherHealthUrl"></code></div>
         <div class="meta" id="weatherDetails">Waiting for refresh…</div>
+      </div>
+      <div class="service-card">
+        <h3>Todo Service</h3>
+        <div id="todoStatus" class="status-badge status-loading">Checking…</div>
+        <div class="meta">URL: <code id="todoHealthUrl"></code></div>
+        <div class="meta" id="todoDetails">Waiting for refresh…</div>
       </div>
     </div>
     <pre id="healthOutput">(refresh to inspect combined health payload)</pre>
@@ -76,6 +83,15 @@
     <input id="weatherCity" value="Seattle">
     <button id="weatherBtn" type="button">GET /weather/{city}</button>
     <pre id="weatherOutput">(click to call)</pre>
+  </div>
+
+  <div class="card">
+    <h2>Todos</h2>
+    <label for="todoTitle">Title</label>
+    <input id="todoTitle" value="Ship todo microservice">
+    <button id="todoCreateBtn" type="button">Create Todo</button>
+    <button id="todoRefreshBtn" type="button">Refresh Todos</button>
+    <pre id="todoOutput">(create or refresh to view todos)</pre>
   </div>
 
   <script src="./app.js"></script>
