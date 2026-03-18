@@ -1,4 +1,5 @@
-const apiBase = window.location.origin;
+const queryApiBase = new URLSearchParams(window.location.search).get("api");
+const apiBase = queryApiBase || `${window.location.protocol}//${window.location.hostname}:8082`;
 
 document.getElementById("apiBase").textContent = apiBase;
 

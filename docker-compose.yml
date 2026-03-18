@@ -5,6 +5,22 @@ services:
       context: .
       dockerfile: src/EchoService/Dockerfile
     image: echo-service:local
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8082:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  echo-client:
+    container_name: echo-client
+    build:
+      context: .
+      dockerfile: src/EchoClient/Dockerfile
+    image: echo-client:local
+    depends_on:
+      - echo-service
     ports:
       - "8080:8080"
     environment:

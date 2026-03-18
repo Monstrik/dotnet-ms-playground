@@ -1,11 +1,25 @@
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("ClientOrigin", policy =>
+	{
+		policy.WithOrigins(
+			"http://localhost:8080",
+			"http://localhost:5050",
+			"http://localhost:5158",
+			"https://localhost:7034")
+			.AllowAnyHeader()
+			.AllowAnyMethod();
+	});
+});
+
 var app = builder.Build();
 
-app.UseStaticFiles();
+app.UseCors("ClientOrigin");
 
 app.MapGet("/", () => Results.Ok(new { service = "echo-service", status = "ok" }));
 
-app.MapGet("/client", () => Results.Redirect("/client/index.html"));
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
