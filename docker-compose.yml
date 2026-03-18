@@ -85,6 +85,74 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
+  order-producer-service:
+    container_name: order-producer-service
+    build:
+      context: .
+      dockerfile: src/OrderProducerService/Dockerfile
+    image: order-producer-service:local
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: app
+      RABBITMQ_PASS: app
+      ORDER_PRODUCER_ORDERS_PER_MINUTE: "12"
+    ports:
+      - "8091:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  kitchen-service:
+    container_name: kitchen-service
+    build:
+      context: .
+      dockerfile: src/KitchenService/Dockerfile
+    image: kitchen-service:local
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: app
+      RABBITMQ_PASS: app
+      KITCHEN_MIN_PREP_SECONDS: "5"
+      KITCHEN_MAX_PREP_SECONDS: "30"
+    ports:
+      - "8092:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
+  delivery-service:
+    container_name: delivery-service
+    build:
+      context: .
+      dockerfile: src/DeliveryService/Dockerfile
+    image: delivery-service:local
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: app
+      RABBITMQ_PASS: app
+      DELIVERY_MIN_SECONDS: "30"
+      DELIVERY_MAX_SECONDS: "60"
+    ports:
+      - "8093:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
   monitor:
     container_name: monitor
     build:
@@ -95,10 +163,16 @@ services:
       - echo-service
       - weather-service
       - todo-service
+      - order-producer-service
+      - kitchen-service
+      - delivery-service
     ports:
       - "8080:8080"
     environment:
       ASPNETCORE_URLS: http://+:8080
+      ORDER_PRODUCER_API: http://order-producer-service:8080
+      KITCHEN_API: http://kitchen-service:8080
+      DELIVERY_API: http://delivery-service:8080
     init: true
     stop_signal: SIGTERM
     stop_grace_period: 30s

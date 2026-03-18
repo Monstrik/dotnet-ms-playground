@@ -2,11 +2,14 @@
 
 ## Repository Reality Check
 - This repo now contains runnable .NET 8 APIs, browser monitor hosts, and tests.
-- The solution entry point is `Solution2.sln` with seven projects:
+- The solution entry point is `Solution2.sln` with ten projects:
   - `src/EchoService/EchoService.csproj`
   - `src/WeatherService/WeatherService.csproj`
   - `src/TodoService/TodoService.csproj`
   - `src/Monitor/Monitor.csproj`
+  - `src/OrderProducerService/OrderProducerService.csproj`
+  - `src/KitchenService/KitchenService.csproj`
+  - `src/DeliveryService/DeliveryService.csproj`
   - `tests/EchoService.Tests/EchoService.Tests.csproj`
   - `tests/WeatherService.Tests/WeatherService.Tests.csproj`
   - `tests/TodoService.Tests/TodoService.Tests.csproj`
@@ -17,7 +20,10 @@
 - `src/WeatherService/Program.cs` is another minimal API that returns deterministic sample weather data.
 - `src/TodoService/Program.cs` is a minimal API that provides todo CRUD and uses Postgres when `TODO_DB_CONNECTION` is configured.
 - `src/Monitor/Program.cs` is a minimal static-file host serving the plain JavaScript monitor UI from `wwwroot`.
-- Docker Compose runs eight containers; browser traffic can hit `monitor` (port `8080`), `plain-js-client` (port `8086`), or `todo-app` (port `8087`), and all call `echo-service` (`8082`), `weather-service` (`8084`), and `todo-service` (`8088`). Compose also includes `rabbitmq` on port `5672` for broker-based integrations.
+- `src/OrderProducerService/Program.cs` is a minimal API plus background worker that generates random food orders and publishes to `orders.new`.
+- `src/KitchenService/Program.cs` is a minimal API plus background worker that consumes `orders.new`, simulates prep, and publishes to `orders.readyForDelivery`.
+- `src/DeliveryService/Program.cs` is a minimal API plus background worker that consumes `orders.readyForDelivery`, simulates delivery, and publishes to `orders.delivered`.
+- Docker Compose runs eleven containers; browser traffic can hit `monitor` (port `8080`), `plain-js-client` (port `8086`), or `todo-app` (port `8087`). Workflow control uses `order-producer-service` (`8091`), `kitchen-service` (`8092`), and `delivery-service` (`8093`) over RabbitMQ (`5672`).
 - Request flow remains direct: route -> minimal handler -> JSON response; no mediator/service layers yet.
 - API contract examples:
   - `GET /health` returns `{ "status": "healthy" }`
@@ -35,6 +41,10 @@
   - `dotnet run --project src/WeatherService/WeatherService.csproj --urls http://localhost:5047`
   - `dotnet run --project src/TodoService/TodoService.csproj --urls http://localhost:5067`
   - `dotnet run --project src/Monitor/Monitor.csproj --urls http://localhost:5050`
+- Run food-order workflow locally (three additional terminals, RabbitMQ required):
+  - `dotnet run --project src/OrderProducerService/OrderProducerService.csproj --urls http://localhost:5077`
+  - `dotnet run --project src/KitchenService/KitchenService.csproj --urls http://localhost:5087`
+  - `dotnet run --project src/DeliveryService/DeliveryService.csproj --urls http://localhost:5097`
 - Docker workflow (from repo root):
   - `docker compose up -d --build`
   - `docker compose down`

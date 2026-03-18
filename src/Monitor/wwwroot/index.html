@@ -3,95 +3,128 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Microservice Monitor</title>
+  <title>Food Order Workflow Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
-    h1 { margin-bottom: 0.5rem; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
-    .service-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.9rem; background: #fff; }
-    .service-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    body { font-family: Arial, sans-serif; max-width: 1180px; margin: 1.5rem auto; padding: 0 1rem; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.8rem; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; background: #fff; margin-bottom: 1rem; }
     .status-badge { display: inline-block; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.85rem; font-weight: 700; }
-    .status-healthy { background: #dcfce7; color: #166534; }
-    .status-unhealthy { background: #fee2e2; color: #991b1b; }
+    .status-running { background: #dcfce7; color: #166534; }
+    .status-stopped { background: #fee2e2; color: #991b1b; }
     .status-loading { background: #e5e7eb; color: #374151; }
-    .meta { color: #4b5563; font-size: 0.9rem; margin-top: 0.5rem; }
-    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input { width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; box-sizing: border-box; }
-    button { padding: 0.5rem 0.9rem; cursor: pointer; }
-    pre { background: #f6f8fa; padding: 0.75rem; border-radius: 6px; overflow-x: auto; }
+    .meta { color: #4b5563; font-size: 0.9rem; margin-top: 0.4rem; word-break: break-all; }
+    label { display: block; margin-top: 0.6rem; margin-bottom: 0.2rem; font-weight: 600; }
+    input { width: 100%; padding: 0.45rem; box-sizing: border-box; }
+    button { padding: 0.45rem 0.8rem; cursor: pointer; margin-right: 0.4rem; margin-top: 0.6rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+    th, td { border: 1px solid #ddd; padding: 0.45rem; text-align: left; }
+    th { background: #f7f7f7; }
+    pre { background: #f6f8fa; padding: 0.75rem; border-radius: 6px; overflow-x: auto; max-height: 280px; }
   </style>
 </head>
 <body>
-  <h1>Microservice Monitor</h1>
-  <p>Shared health dashboard and API explorer for the running services.</p>
-  <p>Echo API: <code id="apiBase"></code></p>
-  <p>Weather API: <code id="weatherApiBase"></code></p>
-  <p>Todo API: <code id="todoApiBase"></code></p>
+  <h1>Food Order Workflow Dashboard</h1>
+  <p>Orchestrate and monitor producer, kitchen, and delivery services over RabbitMQ.</p>
 
   <div class="card">
-    <h2>Shared Health Dashboard</h2>
-    <button id="refreshHealthBtn" type="button">Refresh all services</button>
-    <div class="dashboard" style="margin-top: 1rem;">
-      <div class="service-card">
-        <h3>Monitor</h3>
-        <div id="monitorStatus" class="status-badge status-loading">Checking…</div>
-        <div class="meta">URL: <code id="monitorBase"></code></div>
-        <div class="meta" id="monitorDetails">Waiting for refresh…</div>
-      </div>
-      <div class="service-card">
-        <h3>Echo Service</h3>
-        <div id="echoStatus" class="status-badge status-loading">Checking…</div>
-        <div class="meta">URL: <code id="echoHealthUrl"></code></div>
-        <div class="meta" id="echoDetails">Waiting for refresh…</div>
-      </div>
-      <div class="service-card">
-        <h3>Weather Service</h3>
-        <div id="weatherStatus" class="status-badge status-loading">Checking…</div>
-        <div class="meta">URL: <code id="weatherHealthUrl"></code></div>
-        <div class="meta" id="weatherDetails">Waiting for refresh…</div>
-      </div>
-      <div class="service-card">
-        <h3>Todo Service</h3>
-        <div id="todoStatus" class="status-badge status-loading">Checking…</div>
-        <div class="meta">URL: <code id="todoHealthUrl"></code></div>
-        <div class="meta" id="todoDetails">Waiting for refresh…</div>
-      </div>
+    <h2>Service Endpoints</h2>
+    <div class="meta">Order Producer API: <code id="orderApiBase"></code></div>
+    <div class="meta">Kitchen API: <code id="kitchenApiBase"></code></div>
+    <div class="meta">Delivery API: <code id="deliveryApiBase"></code></div>
+    <div class="meta">Queue metrics source: <code id="queueMetricsUrl"></code></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Order Producer</h2>
+      <div id="orderProducerStatus" class="status-badge status-loading">Checking...</div>
+      <label for="ordersPerMinute">Orders per minute</label>
+      <input id="ordersPerMinute" type="number" min="1" max="6000" value="12">
+      <button id="producerApplyConfigBtn" type="button">Apply config</button>
+      <button id="producerStartBtn" type="button">Start</button>
+      <button id="producerStopBtn" type="button">Stop</button>
+      <div class="meta" id="producerStatsSummary">Waiting for refresh...</div>
     </div>
-    <pre id="healthOutput">(refresh to inspect combined health payload)</pre>
+
+    <div class="card">
+      <h2>Kitchen Service</h2>
+      <div id="kitchenStatus" class="status-badge status-loading">Checking...</div>
+      <label for="kitchenMin">Preparation min seconds</label>
+      <input id="kitchenMin" type="number" min="1" max="600" value="5">
+      <label for="kitchenMax">Preparation max seconds</label>
+      <input id="kitchenMax" type="number" min="1" max="600" value="30">
+      <button id="kitchenApplyConfigBtn" type="button">Apply config</button>
+      <button id="kitchenStartBtn" type="button">Start</button>
+      <button id="kitchenStopBtn" type="button">Stop</button>
+      <div class="meta" id="kitchenStatsSummary">Waiting for refresh...</div>
+    </div>
+
+    <div class="card">
+      <h2>Delivery Service</h2>
+      <div id="deliveryStatus" class="status-badge status-loading">Checking...</div>
+      <label for="deliveryMin">Delivery min seconds</label>
+      <input id="deliveryMin" type="number" min="1" max="1800" value="30">
+      <label for="deliveryMax">Delivery max seconds</label>
+      <input id="deliveryMax" type="number" min="1" max="1800" value="60">
+      <button id="deliveryApplyConfigBtn" type="button">Apply config</button>
+      <button id="deliveryStartBtn" type="button">Start</button>
+      <button id="deliveryStopBtn" type="button">Stop</button>
+      <div class="meta" id="deliveryStatsSummary">Waiting for refresh...</div>
+    </div>
   </div>
 
   <div class="card">
-    <h2>Echo (GET)</h2>
-    <label for="getMessage">Message</label>
-    <input id="getMessage" value="hello-from-browser">
-    <button id="echoGetBtn" type="button">GET /echo/{message}</button>
-    <pre id="echoGetOutput">(click to call)</pre>
+    <h2>Queue and Processing Metrics</h2>
+    <button id="refreshNowBtn" type="button">Refresh now</button>
+    <button id="resetQueuesBtn" type="button">Reset all queues and workflow state</button>
+    <table style="margin-top: 0.8rem;">
+      <thead>
+        <tr>
+          <th>Queue</th>
+          <th>Messages</th>
+          <th>Consumers</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>orders.new</td><td id="queueNewMessages">-</td><td id="queueNewConsumers">-</td></tr>
+        <tr><td>orders.readyForDelivery</td><td id="queueReadyMessages">-</td><td id="queueReadyConsumers">-</td></tr>
+        <tr><td>orders.delivered</td><td id="queueDeliveredMessages">-</td><td id="queueDeliveredConsumers">-</td></tr>
+      </tbody>
+    </table>
+    <table style="margin-top: 0.8rem;">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Currently processing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Order Producer</td><td id="producerProcessing">0</td></tr>
+        <tr><td>Kitchen Service</td><td id="kitchenProcessing">0</td></tr>
+        <tr><td>Delivery Service</td><td id="deliveryProcessing">0</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="card">
-    <h2>Echo (POST)</h2>
-    <label for="postMessage">Message</label>
-    <input id="postMessage" value="posted-from-browser">
-    <button id="echoPostBtn" type="button">POST /echo</button>
-    <pre id="echoPostOutput">(click to call)</pre>
+    <h2>Order Status Timeline</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Status</th>
+          <th>Timestamp (UTC)</th>
+          <th>Items</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody"></tbody>
+    </table>
   </div>
 
   <div class="card">
-    <h2>Weather</h2>
-    <label for="weatherCity">City</label>
-    <input id="weatherCity" value="Seattle">
-    <button id="weatherBtn" type="button">GET /weather/{city}</button>
-    <pre id="weatherOutput">(click to call)</pre>
-  </div>
-
-  <div class="card">
-    <h2>Todos</h2>
-    <label for="todoTitle">Title</label>
-    <input id="todoTitle" value="Ship todo microservice">
-    <button id="todoCreateBtn" type="button">Create Todo</button>
-    <button id="todoRefreshBtn" type="button">Refresh Todos</button>
-    <pre id="todoOutput">(create or refresh to view todos)</pre>
+    <h2>Diagnostics</h2>
+    <pre id="workflowRawOutput">(auto-refresh every 2 seconds)</pre>
   </div>
 
   <script src="./app.js"></script>
