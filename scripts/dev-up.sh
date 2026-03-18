@@ -41,6 +41,8 @@ echo "  Echo API:        http://localhost:8082"
 echo "  Weather API:     http://localhost:8084"
 echo
 echo "Useful checks:"
+echo "  http://localhost:8080"
+echo "  http://localhost:8086"
 echo "  curl http://localhost:8082/echo/hello"
 echo "  curl http://localhost:8084/weather/London"
 
