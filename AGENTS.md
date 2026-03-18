@@ -17,7 +17,7 @@
 - `src/WeatherService/Program.cs` is another minimal API that returns deterministic sample weather data.
 - `src/TodoService/Program.cs` is a minimal API that provides todo CRUD and uses Postgres when `TODO_DB_CONNECTION` is configured.
 - `src/Monitor/Program.cs` is a minimal static-file host serving the plain JavaScript monitor UI from `wwwroot`.
-- Docker Compose runs seven containers; browser traffic can hit `monitor` (port `8080`), `plain-js-client` (port `8086`), or `todo-app` (port `8087`), and all call `echo-service` (`8082`), `weather-service` (`8084`), and `todo-service` (`8088`).
+- Docker Compose runs eight containers; browser traffic can hit `monitor` (port `8080`), `plain-js-client` (port `8086`), or `todo-app` (port `8087`), and all call `echo-service` (`8082`), `weather-service` (`8084`), and `todo-service` (`8088`). Compose also includes `rabbitmq` on port `5672` for broker-based integrations.
 - Request flow remains direct: route -> minimal handler -> JSON response; no mediator/service layers yet.
 - API contract examples:
   - `GET /health` returns `{ "status": "healthy" }`
@@ -54,7 +54,7 @@
 - Runtime dependencies are framework-only for hosts plus `Npgsql` in `src/TodoService/TodoService.csproj`.
 - Test-only dependencies live in `tests/EchoService.Tests/EchoService.Tests.csproj`, `tests/WeatherService.Tests/WeatherService.Tests.csproj`, and `tests/TodoService.Tests/TodoService.Tests.csproj` (xUnit + ASP.NET Core test host).
 - Browser-to-service communication uses CORS, so keep allowed origins aligned with documented local and Compose ports.
-- Compose includes `postgres`; `todo-service` uses `TODO_DB_CONNECTION` to connect internally.
+- Compose includes `postgres` and `rabbitmq`; `todo-service` uses `TODO_DB_CONNECTION` to connect internally, and future broker integrations can use host `rabbitmq` on port `5672`.
 - No CI/CD config, container orchestration manifests, or external package pinning files are present yet.
 
 ## Guidance for Future Agent Changes

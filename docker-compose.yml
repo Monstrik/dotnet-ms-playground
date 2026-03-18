@@ -19,6 +19,26 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: mcr.microsoft.com/azurelinux/base/rabbitmq-server:3
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: app
+      RABBITMQ_DEFAULT_PASS: app
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
   todo-service:
     container_name: todo-service
     build:
@@ -115,4 +135,5 @@ services:
 
 volumes:
   pg-data:
+  rabbitmq-data:
 

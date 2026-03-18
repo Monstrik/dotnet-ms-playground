@@ -28,6 +28,24 @@ wait_for_url() {
   exit 1
 }
 
+wait_for_rabbitmq() {
+  local attempts=30
+
+  for ((i=1; i<=attempts; i++)); do
+    if docker compose exec -T rabbitmq rabbitmq-diagnostics -q ping >/dev/null 2>&1; then
+      echo "rabbitmq is ready: amqp://app:app@localhost:5672"
+      return 0
+    fi
+
+    sleep 1
+  done
+
+  echo "Timed out waiting for rabbitmq" >&2
+  docker compose ps >&2
+  exit 1
+}
+
+wait_for_rabbitmq
 wait_for_url "monitor" "http://localhost:8080/health"
 wait_for_url "plain-js-client" "http://localhost:8086/health"
 wait_for_url "echo-service" "http://localhost:8082/health"
@@ -40,6 +58,7 @@ echo "  Echo API:        http://localhost:8082"
 echo "  Weather API:     http://localhost:8084"
 echo "  Todo API:        http://localhost:8088"
 echo "  Postgres:        localhost:5433"
+echo "  RabbitMQ:        amqp://app:app@localhost:5672"
 echo
 echo "Useful checks:"
 echo "  Monitor:         http://localhost:8080"
@@ -48,4 +67,5 @@ echo "  ToDo app         http://localhost:8087"
 echo "  curl http://localhost:8082/echo/hello"
 echo "  curl http://localhost:8084/weather/London"
 echo "  curl http://localhost:8088/todos"
+echo "  docker compose exec -T rabbitmq rabbitmq-diagnostics -q ping"
 

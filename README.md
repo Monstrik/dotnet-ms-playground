@@ -131,9 +131,10 @@ curl -X POST http://localhost:8088/todos -H 'Content-Type: application/json' -d 
 
 ## Docker Compose (graceful start/stop)
 
-Compose runs **seven containers**:
+Compose runs **eight containers**:
 
 - `postgres` (PostgreSQL, host `5433` -> container `5432`)
+- `rabbitmq` (RabbitMQ, host `5672` -> container `5672`)
 - `echo-service` (ASP.NET API, host `8082` -> container `8080`)
 - `weather-service` (ASP.NET API, host `8084` -> container `8080`)
 - `todo-service` (ASP.NET API, host `8088` -> container `8080`, backed by `postgres`)
@@ -160,9 +161,11 @@ docker compose logs -f echo-service
 docker compose logs -f weather-service
 docker compose logs -f todo-service
 docker compose logs -f postgres
+docker compose logs -f rabbitmq
 docker compose logs -f monitor
 docker compose logs -f plain-js-client
 docker compose logs -f todo-app
+docker compose exec -T rabbitmq rabbitmq-diagnostics -q ping
 curl http://localhost:8082/health
 curl http://localhost:8082/echo/hello
 curl http://localhost:8084/health
@@ -176,10 +179,12 @@ open http://localhost:8087
 
 In this setup, both browser UIs and the todo-app call `http://localhost:8082`, `http://localhost:8084`, and `http://localhost:8088` directly.
 
+RabbitMQ is also available to other containers at hostname `rabbitmq` and from the host at `localhost:5672` using the local development credentials `app` / `app`.
+
 Stop gracefully (30s grace period from `docker-compose.yml`):
 
 ```bash
-docker compose stop -t 30 monitor plain-js-client todo-app echo-service weather-service todo-service postgres
+docker compose stop -t 30 monitor plain-js-client todo-app echo-service weather-service todo-service postgres rabbitmq
 docker compose down
 ```
 
