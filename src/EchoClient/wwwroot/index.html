@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Echo Client</title>
+  <title>Microservice Client</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
     h1 { margin-bottom: 0.5rem; }
@@ -15,8 +15,9 @@
   </style>
 </head>
 <body>
-  <h1>Echo Client</h1>
-  <p>Calls API at <code id="apiBase"></code>.</p>
+  <h1>Microservice Client</h1>
+  <p>Echo API: <code id="apiBase"></code></p>
+  <p>Weather API: <code id="weatherApiBase"></code></p>
 
   <div class="card">
     <h2>Health Check</h2>
@@ -38,6 +39,14 @@
     <input id="postMessage" value="posted-from-browser">
     <button id="echoPostBtn" type="button">POST /echo</button>
     <pre id="echoPostOutput">(click to call)</pre>
+  </div>
+
+  <div class="card">
+    <h2>Weather</h2>
+    <label for="weatherCity">City</label>
+    <input id="weatherCity" value="Seattle">
+    <button id="weatherBtn" type="button">GET /weather/{city}</button>
+    <pre id="weatherOutput">(click to call)</pre>
   </div>
 
   <script src="./app.js"></script>

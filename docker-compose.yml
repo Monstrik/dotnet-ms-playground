@@ -13,6 +13,20 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
+  weather-service:
+    container_name: weather-service
+    build:
+      context: .
+      dockerfile: src/WeatherService/Dockerfile
+    image: weather-service:local
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8084:8080"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
   echo-client:
     container_name: echo-client
     build:
@@ -21,6 +35,7 @@ services:
     image: echo-client:local
     depends_on:
       - echo-service
+      - weather-service
     ports:
       - "8080:8080"
     environment:

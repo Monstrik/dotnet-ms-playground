@@ -1,20 +1,28 @@
-# Solution2 - Echo Microservice
+# Solution2 - Microservices Demo
 
-Minimal ASP.NET Core echo API with a plain JavaScript client.
+Minimal ASP.NET Core microservices demo with an echo API, a weather API, and a plain JavaScript client.
 
 ## Structure
 
 - `src/EchoService` - Web API service
+- `src/WeatherService` - Web API service for sample weather data
 - `src/EchoClient` - static plain JavaScript client host
-- `tests/EchoService.Tests` - integration tests for API endpoints
+- `tests/EchoService.Tests` - integration tests for echo API endpoints
+- `tests/WeatherService.Tests` - integration tests for weather API endpoints
 - `Solution2.sln` - solution entry point
 
 ## Endpoints
 
-- `GET /` - service metadata and status
-- `GET /health` - liveness probe (`healthy`)
-- `GET /echo/{message}` - echoes route message
-- `POST /echo` - echoes JSON message payload
+- `EchoService`
+  - `GET /` - service metadata and status
+  - `GET /health` - liveness probe (`healthy`)
+  - `GET /echo/{message}` - echoes route message
+  - `POST /echo` - echoes JSON message payload
+- `WeatherService`
+  - `GET /` - service metadata and status
+  - `GET /health` - liveness probe (`healthy`)
+  - `GET /weather` - returns a default-city forecast (`Seattle`)
+  - `GET /weather/{city}` - returns a deterministic sample forecast for the requested city
 
 Example POST payload:
 
@@ -29,7 +37,11 @@ dotnet restore
 dotnet run --project src/EchoService/EchoService.csproj --urls http://localhost:5037
 ```
 
-Service URL default from launch profile is `http://localhost:5037` (or use the URL printed by ASP.NET Core).
+Run the weather service locally (separate terminal):
+
+```bash
+dotnet run --project src/WeatherService/WeatherService.csproj --urls http://localhost:5047
+```
 
 Run the client host locally (separate terminal):
 
@@ -40,10 +52,10 @@ dotnet run --project src/EchoClient/EchoClient.csproj --urls http://localhost:50
 Open the JavaScript client in your browser:
 
 ```bash
-open "http://localhost:5050/?api=http://localhost:5037"
+open "http://localhost:5050/?api=http://localhost:5037&weatherApi=http://localhost:5047"
 ```
 
-If your local run uses different ports, pass the API URL with `?api=...`.
+If your local run uses different ports, pass the service URLs with `?api=...&weatherApi=...`.
 
 ## Test
 
@@ -53,7 +65,7 @@ dotnet test
 
 ## Docker run
 
-Build from repository root so the Docker context includes `src/`:
+Build the echo service from repository root so the Docker context includes `src/`:
 
 ```bash
 docker build -f src/EchoService/Dockerfile -t echo-service:local .
@@ -68,11 +80,27 @@ curl http://localhost:8080/echo/hello
 curl -X POST http://localhost:8080/echo -H 'Content-Type: application/json' -d '{"message":"hello"}'
 ```
 
+Build and run the weather service separately:
+
+```bash
+docker build -f src/WeatherService/Dockerfile -t weather-service:local .
+docker run --rm -p 8084:8080 weather-service:local
+```
+
+Then call:
+
+```bash
+curl http://localhost:8084/health
+curl http://localhost:8084/weather
+curl http://localhost:8084/weather/Tokyo
+```
+
 ## Docker Compose (graceful start/stop)
 
-Compose runs **two containers**:
+Compose runs **three containers**:
 
 - `echo-service` (ASP.NET API, host `8082` -> container `8080`)
+- `weather-service` (ASP.NET API, host `8084` -> container `8080`)
 - `echo-client` (ASP.NET static host, host `8080` -> container `8080`)
 
 Use compose to build and start in detached mode:
@@ -85,18 +113,21 @@ Check logs and verify API and UI:
 
 ```bash
 docker compose logs -f echo-service
+docker compose logs -f weather-service
 docker compose logs -f echo-client
 curl http://localhost:8082/health
 curl http://localhost:8082/echo/hello
+curl http://localhost:8084/health
+curl http://localhost:8084/weather/London
 open http://localhost:8080
 ```
 
-In this setup, the browser app calls `http://localhost:8082` directly from `http://localhost:8080`.
+In this setup, the browser app calls `http://localhost:8082` and `http://localhost:8084` directly from `http://localhost:8080`.
 
 Stop gracefully (30s grace period from `docker-compose.yml`):
 
 ```bash
-docker compose stop -t 30 echo-client echo-service
+docker compose stop -t 30 echo-client echo-service weather-service
 docker compose down
 ```
 
