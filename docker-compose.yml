@@ -1,0 +1,15 @@
+services:
+  echo-service:
+    container_name: echo-service
+    build:
+      context: .
+      dockerfile: src/EchoService/Dockerfile
+    image: echo-service:local
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+

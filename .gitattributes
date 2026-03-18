@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+# Keep Windows script line endings when/if added
+*.bat text eol=crlf
+*.cmd text eol=crlf
+

@@ -1,0 +1,28 @@
+# Build output
+**/bin/
+**/obj/
+**/out/
+
+# Test output
+**/TestResults/
+**/*.trx
+
+# User-specific files
+**/*.user
+**/*.suo
+**/*.userprefs
+
+# IDE settings
+.vs/
+.idea/
+
+# OS files
+.DS_Store
+
+# Local environment overrides
+.env
+.env.*
+
+# Package manager directories (if added later)
+node_modules/
+
