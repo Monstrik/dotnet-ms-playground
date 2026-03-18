@@ -95,71 +95,159 @@ function hydrateConfigInputs(producerConfig, kitchenConfig, deliveryConfig) {
   hasHydratedConfigInputs = true;
 }
 
-function renderOrderTimeline(producerStats, kitchenStats, deliveryStats) {
+function normalizeDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatUtc(value) {
+  const date = normalizeDate(value);
+  if (!date) {
+    return "";
+  }
+
+  return date.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+}
+
+function formatElapsedFromCreated(createdAt, stateAt) {
+  const createdDate = normalizeDate(createdAt);
+  const stateDate = normalizeDate(stateAt);
+  if (!createdDate || !stateDate) {
+    return "";
+  }
+
+  const totalSeconds = Math.max(0, Math.floor((stateDate.getTime() - createdDate.getTime()) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function buildOrderSnapshot(producerStats, kitchenStats, deliveryStats) {
   const ordersById = new Map();
 
+  function ensureOrder(orderId) {
+    if (!ordersById.has(orderId)) {
+      ordersById.set(orderId, {
+        orderId,
+        status: "new",
+        createdAt: null,
+        inProcessAt: null,
+        lastStateAt: null,
+        items: []
+      });
+    }
+
+    return ordersById.get(orderId);
+  }
+
+  function updateOrder(orderId, status, stateTimestamp, items) {
+    const order = ensureOrder(orderId);
+
+    if (Array.isArray(items) && items.length > 0) {
+      order.items = items;
+    }
+
+    if (status === "new" && !order.createdAt) {
+      order.createdAt = stateTimestamp || order.createdAt;
+    }
+
+    if (status !== "new" && !order.inProcessAt) {
+      order.inProcessAt = stateTimestamp || order.inProcessAt;
+    }
+
+    const currentStateTime = normalizeDate(order.lastStateAt)?.getTime() || 0;
+    const incomingStateTime = normalizeDate(stateTimestamp)?.getTime() || 0;
+    if (incomingStateTime >= currentStateTime) {
+      order.status = status;
+      order.lastStateAt = stateTimestamp || order.lastStateAt;
+    }
+  }
+
   for (const item of producerStats?.orders || []) {
-    ordersById.set(item.orderId, {
-      orderId: item.orderId,
-      status: "created",
-      timestamp: item.timestamp,
-      items: item.items || []
-    });
+    updateOrder(item.orderId, "new", item.timestamp, item.items || []);
   }
 
   for (const item of kitchenStats?.beingPrepared || []) {
-    ordersById.set(item.orderId, {
-      orderId: item.orderId,
-      status: "being prepared",
-      timestamp: item.timestamp,
-      items: item.items || ordersById.get(item.orderId)?.items || []
-    });
+    updateOrder(item.orderId, "being prepared", item.timestamp, item.items || []);
   }
 
   for (const item of kitchenStats?.readyForDelivery || []) {
-    ordersById.set(item.orderId, {
-      orderId: item.orderId,
-      status: "ready for delivery",
-      timestamp: item.timestamp,
-      items: item.items || ordersById.get(item.orderId)?.items || []
-    });
+    updateOrder(item.orderId, "ready for delivery", item.timestamp, item.items || []);
   }
 
   for (const item of deliveryStats?.beingDelivered || []) {
-    ordersById.set(item.orderId, {
-      orderId: item.orderId,
-      status: "being delivered",
-      timestamp: item.timestamp,
-      items: ordersById.get(item.orderId)?.items || []
-    });
+    updateOrder(item.orderId, "being delivered", item.timestamp);
   }
 
   for (const item of deliveryStats?.delivered || []) {
-    ordersById.set(item.orderId, {
-      orderId: item.orderId,
-      status: "delivered",
-      timestamp: item.timestamp,
-      items: ordersById.get(item.orderId)?.items || []
-    });
+    updateOrder(item.orderId, "delivered", item.timestamp);
   }
 
-  const rows = Array.from(ordersById.values())
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  return Array.from(ordersById.values())
+    .sort((a, b) => (normalizeDate(b.lastStateAt)?.getTime() || 0) - (normalizeDate(a.lastStateAt)?.getTime() || 0))
     .slice(0, 300);
+}
 
-  const body = document.getElementById("ordersTableBody");
+function renderStateTable(bodyId, countId, rows) {
+  const body = document.getElementById(bodyId);
   body.innerHTML = "";
+
+  const badge = document.getElementById(countId);
+  if (badge) {
+    badge.textContent = String(rows.length);
+  }
+
+  if (rows.length === 0) {
+    const emptyRow = document.createElement("tr");
+    emptyRow.innerHTML = '<td colspan="4">No orders</td>';
+    body.appendChild(emptyRow);
+    return;
+  }
 
   for (const order of rows) {
     const row = document.createElement("tr");
-    row.innerHTML = `
-      <td><code>${order.orderId}</code></td>
-      <td>${order.status}</td>
-      <td>${order.timestamp || ""}</td>
-      <td>${(order.items || []).join(", ")}</td>
-    `;
+
+    const idCell = document.createElement("td");
+    const code = document.createElement("code");
+    code.textContent = order.orderId;
+    idCell.appendChild(code);
+
+    const createdCell = document.createElement("td");
+    createdCell.textContent = formatUtc(order.createdAt);
+
+    const inProcessCell = document.createElement("td");
+    inProcessCell.textContent = formatElapsedFromCreated(order.createdAt, order.lastStateAt);
+
+    const itemsCell = document.createElement("td");
+    itemsCell.textContent = (order.items || []).join(", ");
+
+    row.appendChild(idCell);
+    row.appendChild(createdCell);
+    row.appendChild(inProcessCell);
+    row.appendChild(itemsCell);
+
     body.appendChild(row);
   }
+}
+
+function renderOrderStateTables(producerStats, kitchenStats, deliveryStats) {
+  const orders = buildOrderSnapshot(producerStats, kitchenStats, deliveryStats);
+
+  renderStateTable("ordersNewTableBody", "countNew", orders.filter((item) => item.status === "new"));
+  renderStateTable("ordersPreparingTableBody", "countPreparing", orders.filter((item) => item.status === "being prepared"));
+  renderStateTable("ordersReadyTableBody", "countReady", orders.filter((item) => item.status === "ready for delivery"));
+  renderStateTable("ordersDeliveringTableBody", "countDelivering", orders.filter((item) => item.status === "being delivered"));
+  renderStateTable("ordersDeliveredTableBody", "countDelivered", orders.filter((item) => item.status === "delivered"));
 }
 
 function setSummaries(producerStats, kitchenStats, deliveryStats) {
@@ -196,7 +284,7 @@ async function refreshWorkflowDashboard() {
     setQueueMetrics(queueStats);
     setSummaries(producerStats, kitchenStats, deliveryStats);
     hydrateConfigInputs(producerConfig, kitchenConfig, deliveryConfig);
-    renderOrderTimeline(producerStats, kitchenStats, deliveryStats);
+    renderOrderStateTables(producerStats, kitchenStats, deliveryStats);
 
     setDiagnostics({
       refreshedAtUtc: new Date().toISOString(),
