@@ -9,6 +9,7 @@ builder.Services.AddCors(options =>
 		policy.WithOrigins(
 			"http://localhost:8080",
 			"http://localhost:8086",
+			"http://localhost:8087",
 			"http://localhost:5050",
 			"http://localhost:5158",
 			"https://localhost:7034")

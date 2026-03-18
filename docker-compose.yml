@@ -99,6 +99,20 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
+  todo-app:
+    container_name: todo-app
+    build:
+      context: .
+      dockerfile: src/TodoApp/Dockerfile
+    image: todo-app:local
+    depends_on:
+      - todo-service
+    ports:
+      - "8087:80"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+
 volumes:
   pg-data:
 

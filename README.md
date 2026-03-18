@@ -9,6 +9,7 @@ Minimal ASP.NET Core microservices demo with echo, weather, and todo APIs plus b
 - `src/TodoService` - Web API service for simple todo CRUD
 - `src/Monitor` - static plain JavaScript monitor host
 - `src/PlainJsClient` - container-only static host files for a non-.NET plain JS client option
+- `src/TodoApp` - dedicated todo application client (Node static host)
 - `tests/EchoService.Tests` - integration tests for echo API endpoints
 - `tests/WeatherService.Tests` - integration tests for weather API endpoints
 - `tests/TodoService.Tests` - integration tests for todo API endpoints
@@ -130,7 +131,7 @@ curl -X POST http://localhost:8088/todos -H 'Content-Type: application/json' -d 
 
 ## Docker Compose (graceful start/stop)
 
-Compose runs **six containers**:
+Compose runs **seven containers**:
 
 - `postgres` (PostgreSQL, host `5433` -> container `5432`)
 - `echo-service` (ASP.NET API, host `8082` -> container `8080`)
@@ -138,6 +139,7 @@ Compose runs **six containers**:
 - `todo-service` (ASP.NET API, host `8088` -> container `8080`, backed by `postgres`)
 - `monitor` (ASP.NET static host, host `8080` -> container `8080`)
 - `plain-js-client` (Node static host, host `8086` -> container `80`)
+- `todo-app` (Node static host for todo app, host `8087` -> container `80`)
 
 Use compose to build and start in detached mode:
 
@@ -160,6 +162,7 @@ docker compose logs -f todo-service
 docker compose logs -f postgres
 docker compose logs -f monitor
 docker compose logs -f plain-js-client
+docker compose logs -f todo-app
 curl http://localhost:8082/health
 curl http://localhost:8082/echo/hello
 curl http://localhost:8084/health
@@ -168,14 +171,15 @@ curl http://localhost:8088/health
 curl http://localhost:8088/todos
 open http://localhost:8080
 open http://localhost:8086
+open http://localhost:8087
 ```
 
-In this setup, both browser UIs call `http://localhost:8082`, `http://localhost:8084`, and `http://localhost:8088` directly.
+In this setup, both browser UIs and the todo-app call `http://localhost:8082`, `http://localhost:8084`, and `http://localhost:8088` directly.
 
 Stop gracefully (30s grace period from `docker-compose.yml`):
 
 ```bash
-docker compose stop -t 30 monitor plain-js-client echo-service weather-service todo-service postgres
+docker compose stop -t 30 monitor plain-js-client todo-app echo-service weather-service todo-service postgres
 docker compose down
 ```
 
