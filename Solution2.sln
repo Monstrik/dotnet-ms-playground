@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8E63B4C1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EchoService.Tests", "tests\EchoService.Tests\EchoService.Tests.csproj", "{CC352AC7-7969-4A22-B58D-E4FB0F6BF602}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EchoClient", "src\EchoClient\EchoClient.csproj", "{B08FEC15-6D60-4269-A10E-9540343C401E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monitor", "src\Monitor\Monitor.csproj", "{B08FEC15-6D60-4269-A10E-9540343C401E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherService", "src\WeatherService\WeatherService.csproj", "{89B7562A-8502-46D9-A003-D138015CEDF4}"
 EndProject

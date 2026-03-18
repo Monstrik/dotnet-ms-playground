@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microservice Monitor</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: 0.5rem; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+    .service-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.9rem; background: #fff; }
+    .service-card h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .status-badge { display: inline-block; border-radius: 999px; padding: 0.2rem 0.55rem; font-size: 0.85rem; font-weight: 700; }
+    .status-healthy { background: #dcfce7; color: #166534; }
+    .status-unhealthy { background: #fee2e2; color: #991b1b; }
+    .status-loading { background: #e5e7eb; color: #374151; }
+    .meta { color: #4b5563; font-size: 0.9rem; margin-top: 0.5rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+    input { width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; box-sizing: border-box; }
+    button { padding: 0.5rem 0.9rem; cursor: pointer; }
+    pre { background: #f6f8fa; padding: 0.75rem; border-radius: 6px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>Microservice Monitor</h1>
+  <p>Shared health dashboard and API explorer for the running services.</p>
+  <p>Echo API: <code id="apiBase"></code></p>
+  <p>Weather API: <code id="weatherApiBase"></code></p>
+
+  <div class="card">
+    <h2>Shared Health Dashboard</h2>
+    <button id="refreshHealthBtn" type="button">Refresh all services</button>
+    <div class="dashboard" style="margin-top: 1rem;">
+      <div class="service-card">
+        <h3>Monitor</h3>
+        <div id="monitorStatus" class="status-badge status-loading">Checking…</div>
+        <div class="meta">URL: <code id="monitorBase"></code></div>
+        <div class="meta" id="monitorDetails">Waiting for refresh…</div>
+      </div>
+      <div class="service-card">
+        <h3>Echo Service</h3>
+        <div id="echoStatus" class="status-badge status-loading">Checking…</div>
+        <div class="meta">URL: <code id="echoHealthUrl"></code></div>
+        <div class="meta" id="echoDetails">Waiting for refresh…</div>
+      </div>
+      <div class="service-card">
+        <h3>Weather Service</h3>
+        <div id="weatherStatus" class="status-badge status-loading">Checking…</div>
+        <div class="meta">URL: <code id="weatherHealthUrl"></code></div>
+        <div class="meta" id="weatherDetails">Waiting for refresh…</div>
+      </div>
+    </div>
+    <pre id="healthOutput">(refresh to inspect combined health payload)</pre>
+  </div>
+
+  <div class="card">
+    <h2>Echo (GET)</h2>
+    <label for="getMessage">Message</label>
+    <input id="getMessage" value="hello-from-browser">
+    <button id="echoGetBtn" type="button">GET /echo/{message}</button>
+    <pre id="echoGetOutput">(click to call)</pre>
+  </div>
+
+  <div class="card">
+    <h2>Echo (POST)</h2>
+    <label for="postMessage">Message</label>
+    <input id="postMessage" value="posted-from-browser">
+    <button id="echoPostBtn" type="button">POST /echo</button>
+    <pre id="echoPostOutput">(click to call)</pre>
+  </div>
+
+  <div class="card">
+    <h2>Weather</h2>
+    <label for="weatherCity">City</label>
+    <input id="weatherCity" value="Seattle">
+    <button id="weatherBtn" type="button">GET /weather/{city}</button>
+    <pre id="weatherOutput">(click to call)</pre>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
+

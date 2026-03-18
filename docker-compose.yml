@@ -27,12 +27,12 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
 
-  echo-client:
-    container_name: echo-client
+  monitor:
+    container_name: monitor
     build:
       context: .
-      dockerfile: src/EchoClient/Dockerfile
-    image: echo-client:local
+      dockerfile: src/Monitor/Dockerfile
+    image: monitor:local
     depends_on:
       - echo-service
       - weather-service

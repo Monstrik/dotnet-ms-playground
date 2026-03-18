@@ -28,13 +28,13 @@ wait_for_url() {
   exit 1
 }
 
-wait_for_url "echo-client" "http://localhost:8080/health"
+wait_for_url "monitor" "http://localhost:8080/health"
 wait_for_url "echo-service" "http://localhost:8082/health"
 wait_for_url "weather-service" "http://localhost:8084/health"
 
 echo
 echo "Stack is ready:"
-echo "  Client:          http://localhost:8080"
+echo "  Monitor:         http://localhost:8080"
 echo "  Echo API:        http://localhost:8082"
 echo "  Weather API:     http://localhost:8084"
 echo

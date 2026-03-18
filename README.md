@@ -1,12 +1,12 @@
 # Solution2 - Microservices Demo
 
-Minimal ASP.NET Core microservices demo with an echo API, a weather API, and a plain JavaScript client.
+Minimal ASP.NET Core microservices demo with an echo API, a weather API, and a plain JavaScript monitor.
 
 ## Structure
 
 - `src/EchoService` - Web API service
 - `src/WeatherService` - Web API service for sample weather data
-- `src/EchoClient` - static plain JavaScript client host
+- `src/Monitor` - static plain JavaScript monitor host
 - `tests/EchoService.Tests` - integration tests for echo API endpoints
 - `tests/WeatherService.Tests` - integration tests for weather API endpoints
 - `Solution2.sln` - solution entry point
@@ -43,17 +43,19 @@ Run the weather service locally (separate terminal):
 dotnet run --project src/WeatherService/WeatherService.csproj --urls http://localhost:5047
 ```
 
-Run the client host locally (separate terminal):
+Run the monitor host locally (separate terminal):
 
 ```bash
-dotnet run --project src/EchoClient/EchoClient.csproj --urls http://localhost:5050
+dotnet run --project src/Monitor/Monitor.csproj --urls http://localhost:5050
 ```
 
-Open the JavaScript client in your browser:
+Open the monitor in your browser:
 
 ```bash
 open "http://localhost:5050/?api=http://localhost:5037&weatherApi=http://localhost:5047"
 ```
+
+The monitor homepage includes a shared health dashboard for monitor, echo, and weather services.
 
 If your local run uses different ports, pass the service URLs with `?api=...&weatherApi=...`.
 
@@ -101,7 +103,7 @@ Compose runs **three containers**:
 
 - `echo-service` (ASP.NET API, host `8082` -> container `8080`)
 - `weather-service` (ASP.NET API, host `8084` -> container `8080`)
-- `echo-client` (ASP.NET static host, host `8080` -> container `8080`)
+- `monitor` (ASP.NET static host, host `8080` -> container `8080`)
 
 Use compose to build and start in detached mode:
 
@@ -120,7 +122,7 @@ Check logs and verify API and UI:
 ```bash
 docker compose logs -f echo-service
 docker compose logs -f weather-service
-docker compose logs -f echo-client
+docker compose logs -f monitor
 curl http://localhost:8082/health
 curl http://localhost:8082/echo/hello
 curl http://localhost:8084/health
@@ -128,12 +130,12 @@ curl http://localhost:8084/weather/London
 open http://localhost:8080
 ```
 
-In this setup, the browser app calls `http://localhost:8082` and `http://localhost:8084` directly from `http://localhost:8080`.
+In this setup, the monitor calls `http://localhost:8082` and `http://localhost:8084` directly from `http://localhost:8080`.
 
 Stop gracefully (30s grace period from `docker-compose.yml`):
 
 ```bash
-docker compose stop -t 30 echo-client echo-service weather-service
+docker compose stop -t 30 monitor echo-service weather-service
 docker compose down
 ```
 
