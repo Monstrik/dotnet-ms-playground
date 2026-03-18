@@ -109,6 +109,12 @@ Use compose to build and start in detached mode:
 docker compose up -d --build
 ```
 
+Or use the helper script from repo root:
+
+```bash
+./scripts/dev-up.sh
+```
+
 Check logs and verify API and UI:
 
 ```bash
@@ -129,5 +135,11 @@ Stop gracefully (30s grace period from `docker-compose.yml`):
 ```bash
 docker compose stop -t 30 echo-client echo-service weather-service
 docker compose down
+```
+
+Or use the helper script:
+
+```bash
+./scripts/dev-down.sh
 ```
 

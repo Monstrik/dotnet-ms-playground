@@ -33,6 +33,8 @@
 - Docker workflow (from repo root):
   - `docker compose up -d --build`
   - `docker compose down`
+  - `./scripts/dev-up.sh`
+  - `./scripts/dev-down.sh`
 
 ## Project-Specific Conventions
 - Keep solution registration explicit in `Solution2.sln` when adding/removing projects.
