@@ -257,3 +257,119 @@ Or use the helper script:
 ./scripts/dev-down.sh
 ```
 
+## Minikube (Kubernetes local dev)
+
+Deploy the entire stack (all 11 services + postgres + rabbitmq) into a local Kubernetes cluster using minikube.
+
+### Prerequisites
+
+- `minikube` installed (v1.30+)
+- `kubectl` installed
+- Docker daemon running
+- ~4GB RAM and 4 CPU cores available for the minikube VM
+
+### Start the Stack
+
+```bash
+./scripts/minikube-up.sh
+```
+
+This script will:
+1. Start minikube with Docker driver
+2. Build all 9 application images directly inside minikube's Docker daemon
+3. Apply all Kubernetes manifests from `k8s/`
+4. Wait for RabbitMQ and Postgres to be healthy
+5. Wait for all applications to be ready
+
+### Access Services from Your Host
+
+In a **separate terminal**, start the access helper:
+
+```bash
+./scripts/minikube-access.sh
+```
+
+This script will:
+1. Establish `kubectl port-forward` tunnels for all services
+2. Expose them on `localhost` on the same ports as Docker Compose (for compatibility)
+3. Keep running until you press Ctrl+C
+
+Then open your browser to:
+
+```
+http://localhost:8080
+```
+
+All services are now accessible on localhost:
+
+| Service | URL |
+|---------|-----|
+| Monitor Dashboard | `http://localhost:8080` |
+| Order Producer API | `http://localhost:8091` |
+| Kitchen API | `http://localhost:8092` |
+| Delivery API | `http://localhost:8093` |
+| Plain JS Client | `http://localhost:8086` |
+| Todo App | `http://localhost:8087` |
+
+The monitor dashboard automatically detects and uses the workflow APIs on these localhost ports.
+
+### View Cluster Status
+
+While services are running:
+
+```bash
+kubectl get pods -n foodorder
+kubectl get svc -n foodorder
+kubectl logs -n foodorder deployment/monitor
+kubectl logs -n foodorder deployment/rabbitmq
+kubectl logs -n foodorder deployment/postgres
+```
+
+### Stop Everything
+
+Press Ctrl+C in the access helper terminal, then:
+
+```bash
+./scripts/minikube-down.sh
+```
+
+This will:
+1. Kill all port-forward processes
+2. Delete the `foodorder` namespace (removes all resources)
+3. Stop minikube
+
+### Cleanup & Reset
+
+If you need a clean slate:
+
+```bash
+minikube delete
+./scripts/minikube-up.sh
+./scripts/minikube-access.sh   # in another terminal
+```
+
+### Troubleshooting
+
+**"Connection timed out" when accessing `http://localhost:8080`:**
+- Ensure `./scripts/minikube-access.sh` is running in another terminal
+- Verify: `curl http://localhost:8080/health`
+
+**Pods stuck in `Pending` or `CrashLoopBackOff`:**
+```bash
+kubectl describe pod <pod-name> -n foodorder
+kubectl logs <pod-name> -n foodorder
+```
+
+**RabbitMQ or Postgres taking too long:**
+```bash
+kubectl logs -n foodorder deployment/rabbitmq
+kubectl logs -n foodorder deployment/postgres
+```
+
+**Port already in use:**
+```bash
+# Free up conflicting ports
+lsof -i :8080 | grep LISTEN | awk '{print $2}' | xargs kill -9
+```
+
+````

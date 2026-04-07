@@ -50,6 +50,14 @@
   - `docker compose down`
   - `./scripts/dev-up.sh`
   - `./scripts/dev-down.sh`
+- Minikube workflow (from repo root):
+  - `./scripts/minikube-up.sh` — starts minikube, builds all images inside minikube's Docker daemon, applies all manifests, waits for readiness
+  - In a **separate terminal**, run `./scripts/minikube-access.sh` — establishes `kubectl port-forward` tunnels so all services are accessible via `localhost:808X`
+  - `./scripts/minikube-down.sh` — stops all port-forwards, deletes the `foodorder` namespace, and stops minikube
+  - Access the dashboard at `http://localhost:8080` (automatically resolves to workflow APIs on `localhost:8091`, `localhost:8092`, `localhost:8093`)
+  - All manifests live in `k8s/` — one file per service plus `namespace.yaml`
+  - Images use `imagePullPolicy: Never`; they are built inside minikube's daemon during `minikube-up.sh`
+  - **Note:** On macOS with Docker driver, NodePort services are not directly accessible from the host; the `minikube-access.sh` script uses `kubectl port-forward` to expose them on localhost
 
 ## Project-Specific Conventions
 - Keep solution registration explicit in `Solution2.sln` when adding/removing projects.
