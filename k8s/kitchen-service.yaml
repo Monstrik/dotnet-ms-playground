@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kitchen-service
+  namespace: foodorder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kitchen-service
+  template:
+    metadata:
+      labels:
+        app: kitchen-service
+    spec:
+      containers:
+        - name: kitchen-service
+          image: kitchen-service:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_USER
+              value: app
+            - name: RABBITMQ_PASS
+              value: app
+            - name: KITCHEN_MIN_PREP_SECONDS
+              value: "5"
+            - name: KITCHEN_MAX_PREP_SECONDS
+              value: "30"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kitchen-service
+  namespace: foodorder
+spec:
+  selector:
+    app: kitchen-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30092
+  type: NodePort
+

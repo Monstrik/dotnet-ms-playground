@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plain-js-client
+  namespace: foodorder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plain-js-client
+  template:
+    metadata:
+      labels:
+        app: plain-js-client
+    spec:
+      containers:
+        - name: plain-js-client
+          image: plain-js-client:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plain-js-client
+  namespace: foodorder
+spec:
+  selector:
+    app: plain-js-client
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30086
+  type: NodePort
+

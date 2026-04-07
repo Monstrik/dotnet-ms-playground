@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-service
+  namespace: foodorder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-service
+  template:
+    metadata:
+      labels:
+        app: delivery-service
+    spec:
+      containers:
+        - name: delivery-service
+          image: delivery-service:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:8080
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_USER
+              value: app
+            - name: RABBITMQ_PASS
+              value: app
+            - name: DELIVERY_MIN_SECONDS
+              value: "30"
+            - name: DELIVERY_MAX_SECONDS
+              value: "60"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery-service
+  namespace: foodorder
+spec:
+  selector:
+    app: delivery-service
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30093
+  type: NodePort
+
