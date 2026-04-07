@@ -267,7 +267,7 @@ public sealed class KitchenState
 
 public sealed class ServiceControlState
 {
-	private int _running = 1;
+	private int _running = 0; // Start in stopped state
 
 	public bool IsRunning => Interlocked.CompareExchange(ref _running, 1, 1) == 1;
 	public void Start() => Interlocked.Exchange(ref _running, 1);
