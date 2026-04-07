@@ -31,9 +31,9 @@ spec:
             - name: RABBITMQ_PASS
               value: app
             - name: KITCHEN_MIN_PREP_SECONDS
-              value: "5"
+              value: "1"
             - name: KITCHEN_MAX_PREP_SECONDS
-              value: "30"
+              value: "5"
 
 ---
 apiVersion: v1

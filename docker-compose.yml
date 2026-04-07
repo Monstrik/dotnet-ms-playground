@@ -122,8 +122,8 @@ services:
       RABBITMQ_PORT: "5672"
       RABBITMQ_USER: app
       RABBITMQ_PASS: app
-      KITCHEN_MIN_PREP_SECONDS: "5"
-      KITCHEN_MAX_PREP_SECONDS: "30"
+      KITCHEN_MIN_PREP_SECONDS: "1"
+      KITCHEN_MAX_PREP_SECONDS: "5"
     ports:
       - "8092:8080"
     init: true
@@ -145,8 +145,8 @@ services:
       RABBITMQ_PORT: "5672"
       RABBITMQ_USER: app
       RABBITMQ_PASS: app
-      DELIVERY_MIN_SECONDS: "30"
-      DELIVERY_MAX_SECONDS: "60"
+      DELIVERY_MIN_SECONDS: "1"
+      DELIVERY_MAX_SECONDS: "5"
     ports:
       - "8093:8080"
     init: true

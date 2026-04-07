@@ -31,9 +31,9 @@ spec:
             - name: RABBITMQ_PASS
               value: app
             - name: DELIVERY_MIN_SECONDS
-              value: "30"
+              value: "1"
             - name: DELIVERY_MAX_SECONDS
-              value: "60"
+              value: "5"
 
 ---
 apiVersion: v1
