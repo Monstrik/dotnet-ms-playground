@@ -6,8 +6,13 @@ REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 # ── 1. Start minikube ────────────────────────────────────────────────────────
-echo "==> Starting minikube..."
-minikube start --driver=docker --cpus=4 --memory=6144
+echo "==> Checking minikube status..."
+if minikube status >/dev/null 2>&1; then
+  echo "    ✓ Minikube is already running"
+else
+  echo "    Starting minikube..."
+  minikube start --driver=docker --cpus=4 --memory=6144
+fi
 
 # ── 2. Point Docker CLI at minikube's daemon ─────────────────────────────────
 echo "==> Pointing Docker CLI at minikube's daemon..."
@@ -58,35 +63,27 @@ for svc in echo-service weather-service todo-service \
   kubectl rollout status deployment/$svc -n foodorder --timeout=180s
 done
 
-# ── 5. Start minikube tunnel for NodePort access ─────────────────────────────
-echo ""
-echo "==> Starting minikube tunnel (required for NodePort access)..."
-echo "    This allows localhost:30XXX to reach the services."
-minikube tunnel &
-TUNNEL_PID=$!
-sleep 2
-
-# ── 6. Print access URLs ──────────────────────────────────────────────────────
-MINIKUBE_IP=$(minikube ip)
+# ── 5. Done - use minikube-access.sh to establish localhost access ──────────
 echo ""
 echo "╔══════════════════════════════════════════════════════════════════╗"
-echo "║  ✓ All services are up and tunneled!                             ║"
+echo "║  ✓ Cluster provisioned! All services deployed.                   ║"
 echo "╠══════════════════════════════════════════════════════════════════╣"
-echo "║  🌐 MONITOR DASHBOARD (localhost):                               ║"
-echo "║     http://localhost:30080                                       ║"
+echo "║  NEXT STEP: In another terminal, run:                            ║"
 echo "║                                                                  ║"
-echo "║  OTHER SERVICES:                                                 ║"
-echo "║    Plain JS client  →  http://localhost:30086                   ║"
-echo "║    Todo app         →  http://localhost:30087                   ║"
-echo "║    Order Producer   →  http://localhost:30091                   ║"
-echo "║    Kitchen API      →  http://localhost:30092                   ║"
-echo "║    Delivery API     →  http://localhost:30093                   ║"
+echo "║    ./scripts/minikube-access.sh                                  ║"
 echo "║                                                                  ║"
-echo "║  (Or use minikube IP: http://$MINIKUBE_IP:30080)            ║"
-echo "╠══════════════════════════════════════════════════════════════════╣"
-echo "║  Tunnel is running in background (PID $TUNNEL_PID)              ║"
-echo "║  To stop it: pkill -P $$ minikube || pkill -f 'minikube tunnel' ║"
-echo "║  To stop all: ./scripts/minikube-down.sh                        ║"
+echo "║  Then open in browser:                                           ║"
+echo "║    http://localhost:8080                                         ║"
+echo "║                                                                  ║"
+echo "║  SERVICES WILL BE AVAILABLE AT:                                  ║"
+echo "║    Monitor Dashboard  →  http://localhost:8080                   ║"
+echo "║    Order Producer     →  http://localhost:8091                   ║"
+echo "║    Kitchen API        →  http://localhost:8092                   ║"
+echo "║    Delivery API       →  http://localhost:8093                   ║"
+echo "║    Plain JS client    →  http://localhost:8086                   ║"
+echo "║    Todo app           →  http://localhost:8087                   ║"
+echo "║                                                                  ║"
+echo "║  TO STOP: ./scripts/minikube-down.sh                             ║"
 echo "╚══════════════════════════════════════════════════════════════════╝"
 echo ""
 
