@@ -38,6 +38,30 @@
     <div class="meta">Queue metrics source: <code id="queueMetricsUrl"></code></div>
   </div>
 
+  <div class="card">
+    <h2>Workflow Status Summary</h2>
+    <table style="margin-top: 0.8rem;">
+      <thead>
+        <tr>
+          <th>New Orders</th>
+          <th>In the Kitchen</th>
+          <th>Ready for Delivery</th>
+          <th>Out for Delivery</th>
+          <th>Delivered</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: center; font-size: 1.4rem; font-weight: bold;"><span id="summaryCountNew">0</span></td>
+          <td style="text-align: center; font-size: 1.4rem; font-weight: bold;"><span id="summaryCountPreparing">0</span></td>
+          <td style="text-align: center; font-size: 1.4rem; font-weight: bold;"><span id="summaryCountReady">0</span></td>
+          <td style="text-align: center; font-size: 1.4rem; font-weight: bold;"><span id="summaryCountDelivering">0</span></td>
+          <td style="text-align: center; font-size: 1.4rem; font-weight: bold;"><span id="summaryCountDelivered">0</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="grid">
     <div class="card">
       <h2>Order Producer</h2>

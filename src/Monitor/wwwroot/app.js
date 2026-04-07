@@ -261,6 +261,22 @@ function setSummaries(producerStats, kitchenStats, deliveryStats) {
     `Delivered: ${deliveryStats?.deliveredCount ?? 0} | In progress: ${deliveryStats?.processingCount ?? 0}`;
 }
 
+function updateWorkflowStatusSummary(producerStats, kitchenStats, deliveryStats) {
+  const orders = buildOrderSnapshot(producerStats, kitchenStats, deliveryStats);
+  
+  const countNew = orders.filter((item) => item.status === "new").length;
+  const countPreparing = orders.filter((item) => item.status === "being prepared").length;
+  const countReady = orders.filter((item) => item.status === "ready for delivery").length;
+  const countDelivering = orders.filter((item) => item.status === "being delivered").length;
+  const countDelivered = orders.filter((item) => item.status === "delivered").length;
+
+  document.getElementById("summaryCountNew").textContent = String(countNew);
+  document.getElementById("summaryCountPreparing").textContent = String(countPreparing);
+  document.getElementById("summaryCountReady").textContent = String(countReady);
+  document.getElementById("summaryCountDelivering").textContent = String(countDelivering);
+  document.getElementById("summaryCountDelivered").textContent = String(countDelivered);
+}
+
 function setDiagnostics(payload) {
   document.getElementById("workflowRawOutput").textContent = JSON.stringify(payload, null, 2);
 }
@@ -283,6 +299,7 @@ async function refreshWorkflowDashboard() {
     setProcessingMetrics(producerStats, kitchenStats, deliveryStats);
     setQueueMetrics(queueStats);
     setSummaries(producerStats, kitchenStats, deliveryStats);
+    updateWorkflowStatusSummary(producerStats, kitchenStats, deliveryStats);
     hydrateConfigInputs(producerConfig, kitchenConfig, deliveryConfig);
     renderOrderStateTables(producerStats, kitchenStats, deliveryStats);
 
