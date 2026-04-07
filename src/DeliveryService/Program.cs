@@ -174,8 +174,8 @@ public sealed class DeliveryConfigStore(IConfiguration configuration)
 {
 	private readonly object _sync = new();
 	private DeliveryConfig _config = new(
-		Math.Max(1, configuration.GetValue<int?>("DELIVERY_MIN_SECONDS") ?? 30),
-		Math.Max(2, configuration.GetValue<int?>("DELIVERY_MAX_SECONDS") ?? 60));
+		Math.Max(1, configuration.GetValue<int?>("DELIVERY_MIN_SECONDS") ?? 1),
+		Math.Max(2, configuration.GetValue<int?>("DELIVERY_MAX_SECONDS") ?? 5));
 
 	public DeliveryConfig Get()
 	{

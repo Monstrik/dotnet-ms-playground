@@ -174,8 +174,8 @@ public sealed class KitchenConfigStore(IConfiguration configuration)
 {
 	private readonly object _sync = new();
 	private KitchenConfig _config = new(
-		Math.Max(1, configuration.GetValue<int?>("KITCHEN_MIN_PREP_SECONDS") ?? 5),
-		Math.Max(2, configuration.GetValue<int?>("KITCHEN_MAX_PREP_SECONDS") ?? 30));
+		Math.Max(1, configuration.GetValue<int?>("KITCHEN_MIN_PREP_SECONDS") ?? 1),
+		Math.Max(2, configuration.GetValue<int?>("KITCHEN_MAX_PREP_SECONDS") ?? 5));
 
 	public KitchenConfig Get()
 	{
